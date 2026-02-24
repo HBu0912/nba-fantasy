@@ -1,20 +1,10 @@
+import Nav from "./components/Nav";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-950 text-white">
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800">
-        <h1 className="text-2xl font-bold text-orange-500">🏀 HoopDraft</h1>
-        <div className="flex gap-6 text-gray-300">
-          <a href="#" className="hover:text-white">Home</a>
-          <a href="#" className="hover:text-white">My Team</a>
-          <a href="#" className="hover:text-white">Leaderboard</a>
-        </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 text-sm text-gray-300 hover:text-white">Log In</button>
-          <button className="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 rounded-lg font-semibold">Sign Up</button>
-        </div>
-      </nav>
+<Nav />
 
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-28">
