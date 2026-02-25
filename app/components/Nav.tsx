@@ -37,12 +37,20 @@ export default function Nav() {
 >
   🩹 Injury Tracker
 </Link>
+<Link
+  href="/leaders"
+  onClick={() => setPlayersOpen(false)}
+  className="block px-5 py-3 hover:bg-gray-800 text-sm border-t border-gray-800"
+>
+  📊 Category Leaders
+</Link>
             </div>
           )}
         </div>
 
         <Link href="/trade" className="hover:text-white">Trade Analyzer</Link>
-<Link href="#" className="hover:text-white">Leaderboard</Link>
+        <Link href="/standings" className="hover:text-white">Standings</Link>
+        <Link href="#" className="hover:text-white">Leaderboard</Link>
       </div>
 
       <div className="flex gap-3">

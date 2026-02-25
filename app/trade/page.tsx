@@ -1,6 +1,7 @@
 "use client";
 import Nav from "../components/Nav";
 import { useState } from "react";
+import { useScoring, DEFAULT_SCORING } from "../ScoringContext";
 
 const NBA_PLAYERS = [
   { id: 1, name: "LeBron James", team: "LAL", pos: "SF", pts: 23.2, reb: 8.4, ast: 9.0, stl: 1.1, blk: 0.5, tov: 3.5, fgm: 8.4, fga: 15.5, tpm: 1.5, ftm: 4.9, fta: 6.5 },
@@ -26,11 +27,6 @@ const NBA_PLAYERS = [
 ];
 
 type Player = typeof NBA_PLAYERS[0];
-
-const DEFAULT_SCORING = {
-  pts: 1.0, reb: 1.2, ast: 1.5, stl: 3.0, blk: 3.0, tov: -1.0,
-  fgm: 0.0, fga: 0.0, tpm: 0.0, ftm: 0.0, fta: 0.0,
-};
 
 const STAT_LABELS: Record<string, string> = {
   pts: "Points", reb: "Rebounds", ast: "Assists",
@@ -86,7 +82,7 @@ function PlayerSearch({
 }
 
 export default function TradePage() {
-  const [scoring, setScoring] = useState(DEFAULT_SCORING);
+  const { scoring, setScoring } = useScoring();
   const [teamA, setTeamA] = useState<Player[]>([]);
   const [teamB, setTeamB] = useState<Player[]>([]);
 

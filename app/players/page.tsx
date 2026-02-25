@@ -1,8 +1,8 @@
 "use client";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Nav from "../components/Nav";
-
-import { useState } from "react";
 
 const NBA_PLAYERS = [
   { id: 1, name: "LeBron James", team: "LAL", pos: "SF", pts: 23.2, reb: 8.4, ast: 9.0, stl: 1.1, blk: 0.5, fg: 54.1 },
@@ -99,6 +99,15 @@ function VSStatRow({ label, valA, valB, max }: { label: string; valA: number; va
 export default function PlayersPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Player[]>([]);
+  const searchParams = useSearchParams();
+
+useEffect(() => {
+  const name = searchParams.get("compare");
+  if (name) {
+    const player = NBA_PLAYERS.find(p => p.name === decodeURIComponent(name));
+    if (player) setSelected([player]);
+  }
+}, []);
 
   const filtered = NBA_PLAYERS.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) &&
