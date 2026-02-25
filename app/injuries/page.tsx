@@ -1,6 +1,6 @@
 "use client";
 
-import Nav from "../components/Nav";
+import NBANav from "../components/NBANav";
 
 import { useState } from "react";
 
@@ -106,7 +106,7 @@ export default function InjuriesPage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <Nav />
+      <NBANav />
 
       <div className="px-8 py-10 max-w-4xl mx-auto">
         <h1 className="text-4xl font-extrabold mb-2">Injury Tracker</h1>

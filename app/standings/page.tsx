@@ -1,5 +1,5 @@
 "use client";
-import Nav from "../components/Nav";
+import NBANav from "../components/NBANav";
 import { useState } from "react";
 import TeamHoverCard from "../components/TeamHoverCard";
 import PlayerHoverCard from "../components/PlayerHoverCard";
@@ -59,7 +59,7 @@ export default function StandingsPage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <Nav />
+      <NBANav />
       <div className="px-8 py-10 max-w-5xl mx-auto">
 
         {/* Header */}

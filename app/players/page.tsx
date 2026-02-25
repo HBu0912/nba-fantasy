@@ -1,4 +1,5 @@
 "use client";
+import NBANav from "../components/NBANav";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -94,18 +95,7 @@ function PlayersInner() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800">
-        <a href="/" className="text-2xl font-bold text-orange-500">🏀 HoopDraft</a>
-        <div className="flex gap-6 text-gray-300">
-          <a href="/" className="hover:text-white">Home</a>
-          <a href="/players" className="text-white font-semibold">Players</a>
-          <a href="#" className="hover:text-white">Leaderboard</a>
-        </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 text-sm text-gray-300 hover:text-white">Log In</button>
-          <button className="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 rounded-lg font-semibold">Sign Up</button>
-        </div>
-      </nav>
+      <NBANav />
 
       <div className="px-8 py-10 max-w-4xl mx-auto">
         <h1 className="text-4xl font-extrabold mb-2">Player Comparison</h1>

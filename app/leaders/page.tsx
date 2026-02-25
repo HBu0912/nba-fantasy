@@ -1,5 +1,5 @@
 "use client";
-import Nav from "../components/Nav";
+import NBANav from "../components/NBANav";
 import { useState } from "react";
 import { useScoring } from "../ScoringContext";
 import PlayerHoverCard from "../components/PlayerHoverCard";
@@ -94,7 +94,7 @@ export default function LeadersPage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <Nav />
+      <NBANav />
       <div className="px-8 py-10 max-w-7xl mx-auto">
 
         <div className="flex items-start justify-between mb-8">

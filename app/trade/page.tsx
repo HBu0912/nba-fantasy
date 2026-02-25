@@ -1,5 +1,5 @@
 "use client";
-import Nav from "../components/Nav";
+import NBANav from "../components/NBANav";
 import { useState } from "react";
 import { useScoring, DEFAULT_SCORING } from "../ScoringContext";
 
@@ -94,7 +94,7 @@ export default function TradePage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <Nav />
+      <NBANav />
 
       <div className="px-8 py-10 max-w-6xl mx-auto">
         <h1 className="text-4xl font-extrabold mb-2">Trade Analyzer</h1>
