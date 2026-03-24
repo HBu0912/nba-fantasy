@@ -5,6 +5,7 @@ import Link from "next/link";
 
 export default function NBANav() {
   const [playersOpen, setPlayersOpen] = useState(false);
+  const [teamOpen, setTeamOpen] = useState(false);
 
   return (
     <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800 bg-gray-950">
@@ -38,12 +39,35 @@ export default function NBANav() {
               <Link href="/leaders" onClick={() => setPlayersOpen(false)} className="block px-5 py-3 hover:bg-gray-800 text-sm border-t border-gray-800">
                 📊 Category Leaders
               </Link>
+              <Link href="/player-charts" onClick={() => setPlayersOpen(false)} className="block px-5 py-3 hover:bg-gray-800 text-sm border-t border-gray-800">
+                📈 Player Charts
+              </Link>
             </div>
           )}
         </div>
 
         <Link href="/trade" className="hover:text-white">Trade Analyzer</Link>
-        <Link href="/standings" className="hover:text-white">Standings</Link>
+
+        <div className="relative">
+          <button
+            onClick={() => setTeamOpen(!teamOpen)}
+            className="hover:text-white flex items-center gap-1"
+          >
+            Team
+            <span className="text-xs">{teamOpen ? "▲" : "▼"}</span>
+          </button>
+          {teamOpen && (
+            <div className="absolute top-full left-0 mt-3 bg-gray-900 border border-gray-700 rounded-xl overflow-hidden w-44 z-50">
+              <Link href="/standings" onClick={() => setTeamOpen(false)} className="block px-5 py-3 hover:bg-gray-800 text-sm">
+                🏆 Standings
+              </Link>
+              <Link href="/schedule" onClick={() => setTeamOpen(false)} className="block px-5 py-3 hover:bg-gray-800 text-sm border-t border-gray-800">
+                📅 Schedule
+              </Link>
+            </div>
+          )}
+        </div>
+
         <Link href="#" className="hover:text-white">Leaderboard</Link>
       </div>
 

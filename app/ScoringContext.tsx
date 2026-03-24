@@ -4,6 +4,8 @@ import { createContext, useContext, useState } from "react";
 const DEFAULT_SCORING = {
   pts: 1.0, reb: 1.2, ast: 1.5, stl: 3.0, blk: 3.0, tov: -1.0,
   fgm: 0.0, fga: 0.0, tpm: 0.0, ftm: 0.0, fta: 0.0,
+  dd: 0.0,   // double-double bonus
+  td: 0.0,   // triple-double bonus
 };
 
 type Scoring = typeof DEFAULT_SCORING;

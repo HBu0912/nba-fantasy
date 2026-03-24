@@ -11,6 +11,10 @@ const FOOTBALL_IMAGES = [
   "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800&q=80",
 ];
 
+const BASEBALL_IMAGES = [
+  "https://images.unsplash.com/photo-1540747913346-19212a4cf528?w=800&q=80",
+];
+
 function SportCard({
   sport,
   href,
@@ -96,7 +100,7 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="flex gap-16 items-center">
+      <div className="flex flex-wrap gap-12 items-center justify-center">
         <SportCard
           sport="Basketball"
           href="/nba"
@@ -109,6 +113,13 @@ export default function Home() {
           href="/nfl"
           images={FOOTBALL_IMAGES}
           accentColor="#22c55e"
+        />
+        <div className="text-gray-700 font-black text-2xl tracking-widest">VS</div>
+        <SportCard
+          sport="Baseball"
+          href="/mlb"
+          images={BASEBALL_IMAGES}
+          accentColor="#ef4444"
         />
       </div>
 

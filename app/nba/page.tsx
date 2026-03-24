@@ -1,55 +1,29 @@
 "use client";
 import NBANav from "../components/NBANav";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const NBA_PLAYERS = [
-  { id: 1, name: "LeBron James", team: "LAL", pos: "SF", pts: 23.2, reb: 8.4, ast: 9.0, stl: 1.1, blk: 0.5, tov: 3.5, fgm: 8.4, fga: 15.5, tpm: 1.5, ftm: 4.9, fta: 6.5 },
-  { id: 2, name: "Stephen Curry", team: "GSW", pos: "PG", pts: 22.5, reb: 3.8, ast: 6.1, stl: 1.2, blk: 0.3, tov: 3.1, fgm: 8.1, fga: 17.0, tpm: 4.8, ftm: 3.9, fta: 4.3 },
-  { id: 3, name: "Kevin Durant", team: "PHX", pos: "SF", pts: 26.9, reb: 6.9, ast: 4.0, stl: 0.9, blk: 1.0, tov: 3.3, fgm: 10.2, fga: 18.6, tpm: 1.8, ftm: 6.1, fta: 7.0 },
-  { id: 4, name: "Giannis Antetokounmpo", team: "MIL", pos: "PF", pts: 32.7, reb: 11.5, ast: 5.8, stl: 1.2, blk: 1.1, tov: 3.8, fgm: 12.4, fga: 20.1, tpm: 0.5, ftm: 7.3, fta: 11.2 },
-  { id: 5, name: "Nikola Jokic", team: "DEN", pos: "C", pts: 29.6, reb: 12.7, ast: 10.2, stl: 1.8, blk: 0.8, tov: 3.6, fgm: 11.3, fga: 18.4, tpm: 0.6, ftm: 6.4, fta: 7.8 },
-  { id: 6, name: "Luka Doncic", team: "DAL", pos: "PG", pts: 28.6, reb: 9.2, ast: 8.0, stl: 1.4, blk: 0.5, tov: 4.0, fgm: 10.1, fga: 21.2, tpm: 3.2, ftm: 7.8, fta: 9.5 },
-  { id: 7, name: "Joel Embiid", team: "PHI", pos: "C", pts: 24.7, reb: 8.4, ast: 4.4, stl: 0.8, blk: 1.4, tov: 3.2, fgm: 9.1, fga: 17.0, tpm: 0.4, ftm: 7.5, fta: 9.8 },
-  { id: 8, name: "Jayson Tatum", team: "BOS", pos: "SF", pts: 26.0, reb: 8.5, ast: 5.3, stl: 1.1, blk: 0.5, tov: 2.9, fgm: 9.5, fga: 20.4, tpm: 3.1, ftm: 5.4, fta: 6.6 },
-  { id: 9, name: "Devin Booker", team: "PHX", pos: "SG", pts: 25.8, reb: 4.4, ast: 6.5, stl: 1.1, blk: 0.3, tov: 3.0, fgm: 9.3, fga: 19.1, tpm: 2.6, ftm: 6.3, fta: 7.4 },
-  { id: 10, name: "Anthony Edwards", team: "MIN", pos: "SG", pts: 25.6, reb: 5.3, ast: 5.0, stl: 1.3, blk: 0.5, tov: 2.8, fgm: 9.2, fga: 20.3, tpm: 3.4, ftm: 4.8, fta: 5.9 },
-  { id: 11, name: "Shai Gilgeous-Alexander", team: "OKC", pos: "PG", pts: 32.7, reb: 5.5, ast: 6.4, stl: 2.1, blk: 1.0, tov: 2.5, fgm: 11.5, fga: 20.8, tpm: 1.9, ftm: 9.8, fta: 11.4 },
-  { id: 12, name: "Damian Lillard", team: "MIL", pos: "PG", pts: 24.3, reb: 4.4, ast: 7.1, stl: 0.9, blk: 0.3, tov: 2.9, fgm: 8.2, fga: 18.9, tpm: 4.1, ftm: 5.8, fta: 6.7 },
-  { id: 13, name: "Donovan Mitchell", team: "CLE", pos: "SG", pts: 24.5, reb: 4.5, ast: 6.1, stl: 1.5, blk: 0.3, tov: 2.7, fgm: 8.9, fga: 19.4, tpm: 2.8, ftm: 5.5, fta: 6.8 },
-  { id: 14, name: "Kawhi Leonard", team: "LAC", pos: "SF", pts: 23.7, reb: 6.3, ast: 3.6, stl: 1.6, blk: 0.8, tov: 1.9, fgm: 8.8, fga: 17.1, tpm: 1.7, ftm: 5.1, fta: 6.2 },
-  { id: 15, name: "Tyrese Haliburton", team: "IND", pos: "PG", pts: 20.1, reb: 3.9, ast: 10.9, stl: 1.5, blk: 0.4, tov: 3.3, fgm: 7.1, fga: 15.8, tpm: 3.2, ftm: 2.6, fta: 3.1 },
-  { id: 16, name: "Bam Adebayo", team: "MIA", pos: "C", pts: 19.3, reb: 10.4, ast: 3.6, stl: 1.1, blk: 0.9, tov: 2.4, fgm: 7.8, fga: 13.9, tpm: 0.1, ftm: 3.6, fta: 5.1 },
-  { id: 17, name: "Karl-Anthony Towns", team: "NYK", pos: "C", pts: 24.3, reb: 13.2, ast: 3.1, stl: 0.8, blk: 0.9, tov: 2.6, fgm: 9.0, fga: 17.5, tpm: 2.3, ftm: 4.0, fta: 4.9 },
-  { id: 18, name: "Trae Young", team: "ATL", pos: "PG", pts: 23.5, reb: 3.2, ast: 11.5, stl: 1.1, blk: 0.1, tov: 4.1, fgm: 7.9, fga: 18.2, tpm: 2.9, ftm: 6.8, fta: 8.3 },
-  { id: 19, name: "Zion Williamson", team: "NOP", pos: "PF", pts: 22.9, reb: 5.8, ast: 5.0, stl: 1.1, blk: 0.6, tov: 2.8, fgm: 9.5, fga: 16.5, tpm: 0.2, ftm: 3.7, fta: 5.8 },
-  { id: 20, name: "Ja Morant", team: "MEM", pos: "PG", pts: 22.8, reb: 5.8, ast: 9.5, stl: 1.4, blk: 0.5, tov: 3.1, fgm: 8.6, fga: 17.9, tpm: 1.4, ftm: 5.2, fta: 6.8 },
-];
+type SearchResult = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  team?: { abbreviation: string };
+  position?: string;
+};
 
-type Player = typeof NBA_PLAYERS[0];
+type Player = {
+  id: number; // bdlId
+  name: string;
+  team: string;
+  pos: string;
+  pts: number; reb: number; ast: number; stl: number; blk: number; tov: number;
+  fgm: number; fga: number; tpm: number;
+  loading: boolean;
+};
 
 const STAT_KEYS = ["pts", "reb", "ast", "stl", "blk", "tov", "fgm", "fga", "tpm"] as const;
 const STAT_LABELS: Record<string, string> = {
   pts: "PTS", reb: "REB", ast: "AST", stl: "STL",
   blk: "BLK", tov: "TOV", fgm: "FGM", fga: "FGA", tpm: "3PM",
-};
-
-const INJURY_DATA: Record<string, { injury: string; status: string }> = {
-  "LeBron James": { injury: "Left Ankle Sprain", status: "Day-To-Day" },
-  "Joel Embiid": { injury: "Left Knee Inflammation", status: "Out" },
-  "Ja Morant": { injury: "Right Shoulder Soreness", status: "Questionable" },
-  "Kawhi Leonard": { injury: "Load Management", status: "Out" },
-  "Zion Williamson": { injury: "Hamstring Strain", status: "Out 2-3 Weeks" },
-  "Damian Lillard": { injury: "Achilles Soreness", status: "Questionable" },
-  "Anthony Edwards": { injury: "Ankle Contusion", status: "Day-To-Day" },
-  "Karl-Anthony Towns": { injury: "Knee Soreness", status: "Day-To-Day" },
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  "Day-To-Day": "bg-yellow-500",
-  "Questionable": "bg-orange-500",
-  "Out": "bg-red-600",
-  "Out 2-3 Weeks": "bg-red-800",
-  "Healthy": "bg-green-600",
 };
 
 const NBA_TEAM_IDS: Record<string, number> = {
@@ -65,22 +39,18 @@ const NBA_TEAM_IDS: Record<string, number> = {
   TOR: 1610612761, UTA: 1610612762, WAS: 1610612764,
 };
 
-const NBA_PLAYER_IDS: Record<string, number> = {
-  "LeBron James": 2544, "Stephen Curry": 201939, "Kevin Durant": 201142,
-  "Giannis Antetokounmpo": 203507, "Nikola Jokic": 203999, "Luka Doncic": 1629029,
-  "Joel Embiid": 203954, "Jayson Tatum": 1628369, "Devin Booker": 1626164,
-  "Anthony Edwards": 1630162, "Shai Gilgeous-Alexander": 1628983, "Damian Lillard": 203081,
-  "Donovan Mitchell": 1628378, "Kawhi Leonard": 202695, "Tyrese Haliburton": 1630169,
-  "Bam Adebayo": 1628389, "Karl-Anthony Towns": 1626157, "Trae Young": 1629027,
-  "Zion Williamson": 1629627, "Ja Morant": 1629630,
-};
-
-function PlayerCard({ player, players, onRemove, single }: { player: Player; players: Player[]; onRemove: () => void; single?: boolean }) {
+function PlayerCard({
+  player, players, onRemove, single, nbaId,
+}: {
+  player: Player;
+  players: Player[];
+  onRemove: () => void;
+  single?: boolean;
+  nbaId?: number;
+}) {
   const [imgError, setImgError] = useState(false);
-  const injury = INJURY_DATA[player.name] || { injury: "None", status: "Healthy" };
-  const playerId = NBA_PLAYER_IDS[player.name];
   const teamId = NBA_TEAM_IDS[player.team];
-  const photoUrl = playerId ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png` : null;
+  const photoUrl = nbaId ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${nbaId}.png` : null;
 
   const isLeader = (key: string) => {
     if (players.length <= 1) return true;
@@ -90,8 +60,6 @@ function PlayerCard({ player, players, onRemove, single }: { player: Player; pla
 
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden relative flex flex-col ${single ? "max-w-sm w-full" : "w-full"}`}>
-
-      {/* X Button */}
       <button
         onClick={onRemove}
         className="absolute top-2 left-2 z-10 w-6 h-6 bg-gray-800 hover:bg-red-600 rounded-full flex items-center justify-center text-xs text-gray-400 hover:text-white transition-colors"
@@ -99,7 +67,6 @@ function PlayerCard({ player, players, onRemove, single }: { player: Player; pla
         ✕
       </button>
 
-      {/* Photo Header */}
       <div className={`relative bg-gray-800 ${single ? "h-40" : "h-28"}`}>
         {photoUrl && !imgError ? (
           <img
@@ -126,35 +93,37 @@ function PlayerCard({ player, players, onRemove, single }: { player: Player; pla
       </div>
 
       <div className="p-3 flex-1">
-        {/* Name + Status */}
         <div className="flex justify-between items-start mb-3">
           <div>
             <h3 className={`font-extrabold leading-tight ${single ? "text-xl" : "text-sm"}`}>{player.name}</h3>
-            <p className="text-gray-500 text-xs">{player.team} · {player.pos}</p>
+            <p className="text-gray-500 text-xs">{player.team} · {player.pos || "—"}</p>
           </div>
-          <span className={`text-xs px-1.5 py-0.5 rounded-full text-white font-semibold ${STATUS_COLORS[injury.status]}`} style={{ fontSize: "9px" }}>
-            {injury.status}
-          </span>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-1">
-          {STAT_KEYS.map(key => {
-            const leader = isLeader(key);
-            return (
-              <div
-                key={key}
-                className="rounded-lg p-1.5 text-center"
-                style={{ backgroundColor: leader ? "rgba(249,115,22,0.15)" : "rgba(31,41,55,1)" }}
-              >
-                <p className="text-gray-500 uppercase" style={{ fontSize: "9px" }}>{STAT_LABELS[key]}</p>
-                <p className="font-bold text-xs" style={{ color: leader ? "#f97316" : "#6b7280" }}>
-                  {(player as any)[key]}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        {player.loading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <span className="ml-2 text-xs text-gray-500">Loading stats…</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-1">
+            {STAT_KEYS.map(key => {
+              const leader = isLeader(key);
+              return (
+                <div
+                  key={key}
+                  className="rounded-lg p-1.5 text-center"
+                  style={{ backgroundColor: leader ? "rgba(34,197,94,0.15)" : "rgba(31,41,55,1)" }}
+                >
+                  <p className="text-gray-500 uppercase" style={{ fontSize: "9px" }}>{STAT_LABELS[key]}</p>
+                  <p className="font-bold text-xs" style={{ color: leader ? "#22c55e" : "#6b7280" }}>
+                    {(player as any)[key]}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -170,21 +139,113 @@ function AddMoreSlot() {
 
 export default function NBAPage() {
   const [search, setSearch] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [nbaIdMap, setNbaIdMap] = useState<Record<string, number>>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filtered = NBA_PLAYERS.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) &&
-    !players.find(s => s.id === p.id)
-  );
+  // Fetch NBA.com ID map once for photo URLs
+  useEffect(() => {
+    fetch("/api/nba/roster")
+      .then(r => r.json())
+      .then(d => { if (d.nameToId) setNbaIdMap(d.nameToId); })
+      .catch(() => {});
+  }, []);
 
-  const addPlayer = (player: Player) => {
-    if (players.length < 4) {
-      setPlayers([...players, player]);
-      setSearch("");
-    }
+  // Debounced search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!search.trim()) { setResults([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/nba/players?search=${encodeURIComponent(search)}`);
+        const json = await res.json();
+        const already = new Set(players.map(p => p.id));
+        setResults((json.data ?? []).filter((p: SearchResult) => !already.has(p.id)));
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  }, [search, players]);
+
+  const addPlayer = async (result: SearchResult) => {
+    if (players.length >= 4) return;
+    const name = `${result.first_name} ${result.last_name}`;
+    const placeholder: Player = {
+      id: result.id,
+      name,
+      team: result.team?.abbreviation ?? "—",
+      pos: result.position ?? "—",
+      pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
+      fgm: 0, fga: 0, tpm: 0,
+      loading: true,
+    };
+    setPlayers(prev => [...prev, placeholder]);
+    setSearch("");
+    setResults([]);
+
+    try {
+      // 1. Gamelog-first: same source that works in Player Charts (pass nbaId for NBA stats fallback)
+      const nbaId = nbaIdMap[name];
+      const glRes = await fetch(
+        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
+        `${nbaId ? `&playerId=${nbaId}` : ""}`
+      );
+      const glJson = await glRes.json();
+      const allGames: any[] = glJson.games ?? [];
+
+      // Filter to current season (2025-26, started ~Oct 2025)
+      const seasonStart = new Date("2025-10-01").getTime();
+      const currentGames = allGames.filter(g => {
+        const d = new Date(g.date ?? "").getTime();
+        return !isNaN(d) && d >= seasonStart;
+      });
+      const games = currentGames.length > 0 ? currentGames : allGames;
+
+      if (games.length > 0) {
+        const avg2 = (key: string) =>
+          parseFloat((games.reduce((s: number, g: any) => s + (g[key] ?? 0), 0) / games.length).toFixed(1));
+        setPlayers(prev => prev.map(p => p.id === result.id ? {
+          ...p,
+          pts: avg2("pts"), reb: avg2("reb"), ast: avg2("ast"),
+          stl: avg2("stl"), blk: avg2("blk"), tov: avg2("tov"),
+          fgm: avg2("fgm"), fga: avg2("fga"), tpm: avg2("tpm"),
+          loading: false,
+        } : p));
+        return;
+      }
+
+      // 2. Fallback: season averages API
+      const res = await fetch(`/api/nba/season-averages?bdlId=${result.id}`);
+      const json = await res.json();
+      const avg = json.data;
+
+      if (avg && (avg.pts ?? 0) > 0) {
+        setPlayers(prev => prev.map(p => p.id === result.id ? {
+          ...p,
+          pts:  parseFloat((avg.pts      ?? 0).toFixed(1)),
+          reb:  parseFloat((avg.reb      ?? 0).toFixed(1)),
+          ast:  parseFloat((avg.ast      ?? 0).toFixed(1)),
+          stl:  parseFloat((avg.stl      ?? 0).toFixed(1)),
+          blk:  parseFloat((avg.blk      ?? 0).toFixed(1)),
+          tov:  parseFloat((avg.turnover ?? 0).toFixed(1)),
+          fgm:  parseFloat((avg.fgm      ?? 0).toFixed(1)),
+          fga:  parseFloat((avg.fga      ?? 0).toFixed(1)),
+          tpm:  parseFloat((avg.fg3m     ?? 0).toFixed(1)),
+          loading: false,
+        } : p));
+        return;
+      }
+    } catch { /* fall through */ }
+
+    setPlayers(prev => prev.map(p => p.id === result.id ? { ...p, loading: false } : p));
   };
 
-  const removePlayer = (id: number) => setPlayers(players.filter(p => p.id !== id));
+  const removePlayer = (id: number) => setPlayers(prev => prev.filter(p => p.id !== id));
 
   const renderGrid = () => {
     if (players.length === 0) {
@@ -199,28 +260,13 @@ export default function NBAPage() {
     if (players.length === 1) {
       return (
         <div className="flex justify-center">
-          <PlayerCard player={players[0]} players={players} onRemove={() => removePlayer(players[0].id)} single />
-        </div>
-      );
-    }
-
-    if (players.length === 2) {
-      return (
-        <div className="grid grid-cols-2 gap-4">
-          {players.map(p => (
-            <PlayerCard key={p.id} player={p} players={players} onRemove={() => removePlayer(p.id)} />
-          ))}
-        </div>
-      );
-    }
-
-    if (players.length === 3) {
-      return (
-        <div className="grid grid-cols-2 gap-4">
-          {players.map(p => (
-            <PlayerCard key={p.id} player={p} players={players} onRemove={() => removePlayer(p.id)} />
-          ))}
-          <AddMoreSlot />
+          <PlayerCard
+            player={players[0]}
+            players={players}
+            onRemove={() => removePlayer(players[0].id)}
+            nbaId={nbaIdMap[players[0].name]}
+            single
+          />
         </div>
       );
     }
@@ -228,8 +274,15 @@ export default function NBAPage() {
     return (
       <div className="grid grid-cols-2 gap-4">
         {players.map(p => (
-          <PlayerCard key={p.id} player={p} players={players} onRemove={() => removePlayer(p.id)} />
+          <PlayerCard
+            key={p.id}
+            player={p}
+            players={players}
+            onRemove={() => removePlayer(p.id)}
+            nbaId={nbaIdMap[p.name]}
+          />
         ))}
+        {players.length === 3 && <AddMoreSlot />}
       </div>
     );
   };
@@ -256,17 +309,20 @@ export default function NBAPage() {
             />
             {search && (
               <div className="absolute top-full left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl mt-2 z-10 overflow-hidden shadow-2xl">
-                {filtered.length === 0 && (
+                {searching && (
+                  <div className="px-4 py-3 text-gray-500 text-sm">Searching…</div>
+                )}
+                {!searching && results.length === 0 && (
                   <div className="px-4 py-3 text-gray-500 text-sm">No players found</div>
                 )}
-                {filtered.map(player => (
+                {results.map(result => (
                   <button
-                    key={player.id}
-                    onClick={() => addPlayer(player)}
+                    key={result.id}
+                    onClick={() => addPlayer(result)}
                     className="w-full text-left px-4 py-3 hover:bg-gray-800 flex justify-between items-center border-b border-gray-800 last:border-0"
                   >
-                    <span className="font-semibold text-sm">{player.name}</span>
-                    <span className="text-orange-500 text-xs">{player.team}</span>
+                    <span className="font-semibold text-sm">{result.first_name} {result.last_name}</span>
+                    <span className="text-orange-500 text-xs">{result.team?.abbreviation ?? "—"}</span>
                   </button>
                 ))}
               </div>

@@ -81,24 +81,25 @@ function calcFantasy(player: Player, scoring: Record<string, number>) {
   }, 0);
 }
 
-export default function PlayerHoverCard({ player }: { player: Player }) {
+export default function PlayerHoverCard({ player, nbaId }: { player: Player; nbaId?: number }) {
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const { scoring } = useScoring();
 
   const injury = INJURY_DATA[player.name] || { injury: "None", status: "Healthy" };
   const fantasyScore = calcFantasy(player, scoring).toFixed(1);
-  const playerId = NBA_PLAYER_IDS[player.name];
+  const resolvedNbaId = nbaId ?? NBA_PLAYER_IDS[player.name];
   const teamId = NBA_TEAM_IDS[player.team];
-  const photoUrl = playerId
-    ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${playerId}.png`
+  const photoUrl = resolvedNbaId
+    ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${resolvedNbaId}.png`
     : null;
 
   return (
     <span className="relative inline-block">
       <button
         onClick={() => setOpen(!open)}
-        className="font-semibold text-white hover:text-orange-400 transition-colors cursor-pointer underline decoration-dotted underline-offset-2"
+        title={player.name}
+        className="font-semibold text-white hover:text-orange-400 transition-colors cursor-pointer underline decoration-dotted underline-offset-2 block truncate max-w-[155px] text-left"
       >
         {player.name}
       </button>

@@ -1,78 +1,107 @@
 "use client";
 import NBANav from "../components/NBANav";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useScoring, DEFAULT_SCORING } from "../ScoringContext";
 
-const NBA_PLAYERS = [
-  { id: 1, name: "LeBron James", team: "LAL", pos: "SF", pts: 23.2, reb: 8.4, ast: 9.0, stl: 1.1, blk: 0.5, tov: 3.5, fgm: 8.4, fga: 15.5, tpm: 1.5, ftm: 4.9, fta: 6.5 },
-  { id: 2, name: "Stephen Curry", team: "GSW", pos: "PG", pts: 22.5, reb: 3.8, ast: 6.1, stl: 1.2, blk: 0.3, tov: 3.1, fgm: 8.1, fga: 17.0, tpm: 4.8, ftm: 3.9, fta: 4.3 },
-  { id: 3, name: "Kevin Durant", team: "PHX", pos: "SF", pts: 26.9, reb: 6.9, ast: 4.0, stl: 0.9, blk: 1.0, tov: 3.3, fgm: 10.2, fga: 18.6, tpm: 1.8, ftm: 6.1, fta: 7.0 },
-  { id: 4, name: "Giannis Antetokounmpo", team: "MIL", pos: "PF", pts: 32.7, reb: 11.5, ast: 5.8, stl: 1.2, blk: 1.1, tov: 3.8, fgm: 12.4, fga: 20.1, tpm: 0.5, ftm: 7.3, fta: 11.2 },
-  { id: 5, name: "Nikola Jokic", team: "DEN", pos: "C", pts: 29.6, reb: 12.7, ast: 10.2, stl: 1.8, blk: 0.8, tov: 3.6, fgm: 11.3, fga: 18.4, tpm: 0.6, ftm: 6.4, fta: 7.8 },
-  { id: 6, name: "Luka Doncic", team: "DAL", pos: "PG", pts: 28.6, reb: 9.2, ast: 8.0, stl: 1.4, blk: 0.5, tov: 4.0, fgm: 10.1, fga: 21.2, tpm: 3.2, ftm: 7.8, fta: 9.5 },
-  { id: 7, name: "Joel Embiid", team: "PHI", pos: "C", pts: 24.7, reb: 8.4, ast: 4.4, stl: 0.8, blk: 1.4, tov: 3.2, fgm: 9.1, fga: 17.0, tpm: 0.4, ftm: 7.5, fta: 9.8 },
-  { id: 8, name: "Jayson Tatum", team: "BOS", pos: "SF", pts: 26.0, reb: 8.5, ast: 5.3, stl: 1.1, blk: 0.5, tov: 2.9, fgm: 9.5, fga: 20.4, tpm: 3.1, ftm: 5.4, fta: 6.6 },
-  { id: 9, name: "Devin Booker", team: "PHX", pos: "SG", pts: 25.8, reb: 4.4, ast: 6.5, stl: 1.1, blk: 0.3, tov: 3.0, fgm: 9.3, fga: 19.1, tpm: 2.6, ftm: 6.3, fta: 7.4 },
-  { id: 10, name: "Anthony Edwards", team: "MIN", pos: "SG", pts: 25.6, reb: 5.3, ast: 5.0, stl: 1.3, blk: 0.5, tov: 2.8, fgm: 9.2, fga: 20.3, tpm: 3.4, ftm: 4.8, fta: 5.9 },
-  { id: 11, name: "Shai Gilgeous-Alexander", team: "OKC", pos: "PG", pts: 32.7, reb: 5.5, ast: 6.4, stl: 2.1, blk: 1.0, tov: 2.5, fgm: 11.5, fga: 20.8, tpm: 1.9, ftm: 9.8, fta: 11.4 },
-  { id: 12, name: "Damian Lillard", team: "MIL", pos: "PG", pts: 24.3, reb: 4.4, ast: 7.1, stl: 0.9, blk: 0.3, tov: 2.9, fgm: 8.2, fga: 18.9, tpm: 4.1, ftm: 5.8, fta: 6.7 },
-  { id: 13, name: "Donovan Mitchell", team: "CLE", pos: "SG", pts: 24.5, reb: 4.5, ast: 6.1, stl: 1.5, blk: 0.3, tov: 2.7, fgm: 8.9, fga: 19.4, tpm: 2.8, ftm: 5.5, fta: 6.8 },
-  { id: 14, name: "Kawhi Leonard", team: "LAC", pos: "SF", pts: 23.7, reb: 6.3, ast: 3.6, stl: 1.6, blk: 0.8, tov: 1.9, fgm: 8.8, fga: 17.1, tpm: 1.7, ftm: 5.1, fta: 6.2 },
-  { id: 15, name: "Tyrese Haliburton", team: "IND", pos: "PG", pts: 20.1, reb: 3.9, ast: 10.9, stl: 1.5, blk: 0.4, tov: 3.3, fgm: 7.1, fga: 15.8, tpm: 3.2, ftm: 2.6, fta: 3.1 },
-  { id: 16, name: "Bam Adebayo", team: "MIA", pos: "C", pts: 19.3, reb: 10.4, ast: 3.6, stl: 1.1, blk: 0.9, tov: 2.4, fgm: 7.8, fga: 13.9, tpm: 0.1, ftm: 3.6, fta: 5.1 },
-  { id: 17, name: "Karl-Anthony Towns", team: "NYK", pos: "C", pts: 24.3, reb: 13.2, ast: 3.1, stl: 0.8, blk: 0.9, tov: 2.6, fgm: 9.0, fga: 17.5, tpm: 2.3, ftm: 4.0, fta: 4.9 },
-  { id: 18, name: "Trae Young", team: "ATL", pos: "PG", pts: 23.5, reb: 3.2, ast: 11.5, stl: 1.1, blk: 0.1, tov: 4.1, fgm: 7.9, fga: 18.2, tpm: 2.9, ftm: 6.8, fta: 8.3 },
-  { id: 19, name: "Zion Williamson", team: "NOP", pos: "PF", pts: 22.9, reb: 5.8, ast: 5.0, stl: 1.1, blk: 0.6, tov: 2.8, fgm: 9.5, fga: 16.5, tpm: 0.2, ftm: 3.7, fta: 5.8 },
-  { id: 20, name: "Ja Morant", team: "MEM", pos: "PG", pts: 22.8, reb: 5.8, ast: 9.5, stl: 1.4, blk: 0.5, tov: 3.1, fgm: 8.6, fga: 17.9, tpm: 1.4, ftm: 5.2, fta: 6.8 },
-];
+type SearchResult = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  team?: { abbreviation: string };
+  position?: string;
+};
 
-type Player = typeof NBA_PLAYERS[0];
+type Player = {
+  id: number;      // bdlId
+  name: string;
+  team: string;
+  pos: string;
+  pts: number;
+  reb: number;
+  ast: number;
+  stl: number;
+  blk: number;
+  tov: number;
+  fgm: number;
+  fga: number;
+  tpm: number;
+  ftm: number;
+  fta: number;
+  loading: boolean;
+};
 
 const STAT_LABELS: Record<string, string> = {
   pts: "Points", reb: "Rebounds", ast: "Assists",
   stl: "Steals", blk: "Blocks", tov: "Turnovers",
   fgm: "FGM", fga: "FGA", tpm: "3PM", ftm: "FTM", fta: "FTA",
+  dd: "Double-Double", td: "Triple-Double",
 };
 
 const REQUIRED_STATS = ["pts", "reb", "ast", "stl", "blk", "tov"];
-const OPTIONAL_STATS = ["fgm", "fga", "tpm", "ftm", "fta"];
+const OPTIONAL_STATS = ["fgm", "fga", "tpm", "ftm", "fta", "dd", "td"];
 
 function calcFantasy(player: Player, scoring: typeof DEFAULT_SCORING) {
   return Object.keys(scoring).reduce((total, key) => {
-    return total + (player[key as keyof Player] as number) * scoring[key as keyof typeof scoring];
+    return total + ((player as any)[key] ?? 0) * (scoring as any)[key];
   }, 0);
 }
 
 function PlayerSearch({
-  side, players, onAdd,
-}: { side: string; players: Player[]; onAdd: (p: Player) => void }) {
+  side,
+  players,
+  onAdd,
+}: {
+  side: string;
+  players: Player[];
+  onAdd: (result: SearchResult) => void;
+}) {
   const [search, setSearch] = useState("");
-  const filtered = NBA_PLAYERS.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) &&
-    !players.find(s => s.id === p.id)
-  );
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!search.trim()) { setResults([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/nba/players?search=${encodeURIComponent(search)}`);
+        const json = await res.json();
+        const alreadyIds = new Set(players.map(p => p.id));
+        setResults((json.data ?? []).filter((p: SearchResult) => !alreadyIds.has(p.id)));
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  }, [search, players]);
 
   return (
     <div className="relative mb-3">
       <input
         type="text"
-        placeholder={`Add player to ${side}...`}
+        placeholder={players.length >= 5 ? `${side} is full` : `Add player to ${side}...`}
         value={search}
         onChange={e => setSearch(e.target.value)}
         disabled={players.length >= 5}
         className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500 disabled:opacity-40"
       />
       {search && (
-        <div className="absolute top-full left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl mt-1 z-50 overflow-hidden">
-          {filtered.length === 0 && <div className="px-4 py-3 text-gray-500 text-sm">No players found</div>}
-          {filtered.map(p => (
+        <div className="absolute top-full left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl mt-1 z-50 overflow-hidden shadow-2xl">
+          {searching && <div className="px-4 py-3 text-gray-500 text-sm">Searching...</div>}
+          {!searching && results.length === 0 && (
+            <div className="px-4 py-3 text-gray-500 text-sm">No players found</div>
+          )}
+          {results.map(r => (
             <button
-              key={p.id}
-              onClick={() => { onAdd(p); setSearch(""); }}
-              className="w-full text-left px-4 py-2 hover:bg-gray-800 flex justify-between items-center text-sm"
+              key={r.id}
+              onClick={() => { onAdd(r); setSearch(""); setResults([]); }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-800 flex justify-between items-center text-sm border-b border-gray-800 last:border-0"
             >
-              <span className="font-semibold">{p.name}</span>
-              <span className="text-orange-500 text-xs">{p.team} · {p.pos}</span>
+              <span className="font-semibold">{r.first_name} {r.last_name}</span>
+              <span className="text-orange-500 text-xs">{r.team?.abbreviation ?? "—"} · {r.position ?? "—"}</span>
             </button>
           ))}
         </div>
@@ -85,6 +114,88 @@ export default function TradePage() {
   const { scoring, setScoring } = useScoring();
   const [teamA, setTeamA] = useState<Player[]>([]);
   const [teamB, setTeamB] = useState<Player[]>([]);
+  const [nbaIdMap, setNbaIdMap] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/nba/roster")
+      .then(r => r.json())
+      .then(d => { if (d.nameToId) setNbaIdMap(d.nameToId); })
+      .catch(() => {});
+  }, []);
+
+  const addPlayer = async (
+    result: SearchResult,
+    setTeam: React.Dispatch<React.SetStateAction<Player[]>>
+  ) => {
+    const name = `${result.first_name} ${result.last_name}`;
+    const placeholder: Player = {
+      id: result.id,
+      name,
+      team: result.team?.abbreviation ?? "—",
+      pos: result.position ?? "—",
+      pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
+      fgm: 0, fga: 0, tpm: 0, ftm: 0, fta: 0,
+      loading: true,
+    };
+    setTeam(prev => [...prev, placeholder]);
+
+    try {
+      const nbaId = nbaIdMap[name];
+      const glRes = await fetch(
+        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
+        `${nbaId ? `&playerId=${nbaId}` : ""}`
+      );
+      const glJson = await glRes.json();
+      const allGames: any[] = glJson.games ?? [];
+
+      const seasonStart = new Date("2025-10-01").getTime();
+      const currentGames = allGames.filter(g => {
+        const d = new Date(g.date ?? "").getTime();
+        return !isNaN(d) && d >= seasonStart;
+      });
+      const games = currentGames.length > 0 ? currentGames : allGames;
+
+      if (games.length > 0) {
+        const avg = (key: string) =>
+          parseFloat((games.reduce((s: number, g: any) => s + (g[key] ?? 0), 0) / games.length).toFixed(1));
+        setTeam(prev => prev.map(p => p.id === result.id ? {
+          ...p,
+          pts: avg("pts"), reb: avg("reb"), ast: avg("ast"),
+          stl: avg("stl"), blk: avg("blk"), tov: avg("tov"),
+          fgm: avg("fgm"), fga: avg("fga"), tpm: avg("tpm"),
+          ftm: avg("ftm"), fta: avg("fta"),
+          loading: false,
+        } : p));
+        return;
+      }
+
+      // Fallback: season averages
+      const saRes = await fetch(`/api/nba/season-averages?bdlId=${result.id}`);
+      const saJson = await saRes.json();
+      const avg = saJson.data;
+
+      if (avg && (avg.pts ?? 0) > 0) {
+        setTeam(prev => prev.map(p => p.id === result.id ? {
+          ...p,
+          pts:  parseFloat((avg.pts      ?? 0).toFixed(1)),
+          reb:  parseFloat((avg.reb      ?? 0).toFixed(1)),
+          ast:  parseFloat((avg.ast      ?? 0).toFixed(1)),
+          stl:  parseFloat((avg.stl      ?? 0).toFixed(1)),
+          blk:  parseFloat((avg.blk      ?? 0).toFixed(1)),
+          tov:  parseFloat((avg.turnover ?? 0).toFixed(1)),
+          fgm:  parseFloat((avg.fgm      ?? 0).toFixed(1)),
+          fga:  parseFloat((avg.fga      ?? 0).toFixed(1)),
+          tpm:  parseFloat((avg.fg3m     ?? 0).toFixed(1)),
+          ftm:  parseFloat((avg.ftm      ?? 0).toFixed(1)),
+          fta:  parseFloat((avg.fta      ?? 0).toFixed(1)),
+          loading: false,
+        } : p));
+        return;
+      }
+    } catch { /* fall through */ }
+
+    setTeam(prev => prev.map(p => p.id === result.id ? { ...p, loading: false } : p));
+  };
 
   const totalA = teamA.reduce((sum, p) => sum + calcFantasy(p, scoring), 0);
   const totalB = teamB.reduce((sum, p) => sum + calcFantasy(p, scoring), 0);
@@ -125,7 +236,7 @@ export default function TradePage() {
 
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Optional Stats</p>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-7 gap-4">
               {OPTIONAL_STATS.map(key => (
                 <div key={key}>
                   <label className="text-xs text-gray-400 block mb-1">{STAT_LABELS[key]}</label>
@@ -148,7 +259,11 @@ export default function TradePage() {
           {/* Team A */}
           <div className="bg-gray-900 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-orange-400 mb-4">Team A Gives</h2>
-            <PlayerSearch side="Team A" players={teamA} onAdd={p => setTeamA([...teamA, p])} />
+            <PlayerSearch
+              side="Team A"
+              players={teamA}
+              onAdd={r => addPlayer(r, setTeamA)}
+            />
             <div className="space-y-2 mt-3">
               {teamA.map(p => (
                 <div key={p.id} className="flex justify-between items-center bg-gray-800 rounded-xl px-4 py-3">
@@ -157,7 +272,11 @@ export default function TradePage() {
                     <p className="text-xs text-gray-400">{p.team} · {p.pos}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-orange-400 text-sm font-bold">{calcFantasy(p, scoring).toFixed(1)} pts</span>
+                    {p.loading ? (
+                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span className="text-orange-400 text-sm font-bold">{calcFantasy(p, scoring).toFixed(1)} pts</span>
+                    )}
                     <button onClick={() => setTeamA(teamA.filter(x => x.id !== p.id))} className="text-gray-600 hover:text-red-400">✕</button>
                   </div>
                 </div>
@@ -169,7 +288,11 @@ export default function TradePage() {
           {/* Team B */}
           <div className="bg-gray-900 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-blue-400 mb-4">Team B Gives</h2>
-            <PlayerSearch side="Team B" players={teamB} onAdd={p => setTeamB([...teamB, p])} />
+            <PlayerSearch
+              side="Team B"
+              players={teamB}
+              onAdd={r => addPlayer(r, setTeamB)}
+            />
             <div className="space-y-2 mt-3">
               {teamB.map(p => (
                 <div key={p.id} className="flex justify-between items-center bg-gray-800 rounded-xl px-4 py-3">
@@ -178,7 +301,11 @@ export default function TradePage() {
                     <p className="text-xs text-gray-400">{p.team} · {p.pos}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-blue-400 text-sm font-bold">{calcFantasy(p, scoring).toFixed(1)} pts</span>
+                    {p.loading ? (
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span className="text-blue-400 text-sm font-bold">{calcFantasy(p, scoring).toFixed(1)} pts</span>
+                    )}
                     <button onClick={() => setTeamB(teamB.filter(x => x.id !== p.id))} className="text-gray-600 hover:text-red-400">✕</button>
                   </div>
                 </div>
