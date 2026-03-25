@@ -234,7 +234,10 @@ function ChartTooltip({ active, payload, statName, color, dataKey }: any) {
   );
 }
 
-const fmtLabel = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
+const fmtLabel = (v: unknown) => {
+  const n = Number(v);
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+};
 
 // Custom X-axis tick — two-line for ≤7 games, rotated single-line for 8+
 function makeXTick(data: any[]) {
