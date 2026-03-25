@@ -68,10 +68,11 @@ async function fromBalldontlie(
       resolvedId = player.id;
     }
 
-    // Include season=2026 in case balldontlie uses end-year naming for 2025-26
+    // BDL may use start-year (2025) or end-year (2026) for the 2025-26 season — include both.
+    // Non-multi: current season only (avoid older seasons filling up per_page=100 limit).
     const seasonParams = multi
       ? "seasons[]=2026&seasons[]=2025&seasons[]=2024&seasons[]=2023&seasons[]=2022"
-      : "seasons[]=2026&seasons[]=2025&seasons[]=2024";
+      : "seasons[]=2026&seasons[]=2025";
     const statsRes = await fetch(
       `https://api.balldontlie.io/v1/stats?player_ids[]=${resolvedId}&${seasonParams}&per_page=100`,
       { headers: { Authorization: key }, next: { revalidate: multi ? 3600 : 1800 } }
