@@ -1,63 +1,64 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "edge";
-export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
-const NBA_HEADERS = {
-  Accept: "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  Connection: "keep-alive",
-  Host: "stats.nba.com",
-  Origin: "https://www.nba.com",
-  Referer: "https://www.nba.com/",
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  "x-nba-stats-origin": "stats",
-  "x-nba-stats-token": "true",
+// ESPN category name → our stat key
+const STAT_MAP: Record<string, string> = {
+  pointsPerGame:               "pts",
+  reboundsPerGame:             "reb",
+  assistsPerGame:              "ast",
+  stealsPerGame:               "stl",
+  blocksPerGame:               "blk",
+  threePointFieldGoalsPerGame: "tpm",
+  turnoversPerGame:            "tov",
+  fieldGoalsMadePerGame:       "fgm",
+  fieldGoalsAttemptedPerGame:  "fga",
+  freeThrowsMadePerGame:       "ftm",
+  freeThrowsAttemptedPerGame:  "fta",
 };
 
 export async function GET() {
   try {
-    const url =
-      "https://stats.nba.com/stats/leaguedashplayerstats?MeasureType=Base&PerMode=PerGame&PlusMinus=N&PaceAdjust=N&Rank=N&LeagueID=00&Season=2025-26&SeasonType=Regular+Season&Month=0&OpponentTeamID=0&DateFrom=&DateTo=&GameScope=&LastNGames=0&Location=&Outcome=&SeasonSegment=&VsConference=&VsDivision=&PlayerExperience=&PlayerPosition=&StarterBench=&GameSegment=&Period=0";
-
-    const res = await fetch(url, { headers: NBA_HEADERS });
+    const res = await fetch(
+      "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/leaders?limit=100",
+      { next: { revalidate: 3600 } }
+    );
     if (!res.ok) return NextResponse.json({ players: [] });
-
     const json = await res.json();
-    const resultSet = json.resultSets?.[0];
-    if (!resultSet) return NextResponse.json({ players: [] });
 
-    const h: string[] = resultSet.headers;
-    const rows: any[][] = resultSet.rowSet;
+    const map = new Map<string, any>();
 
-    const col = (n: string) => h.indexOf(n);
+    for (const cat of json.categories ?? []) {
+      const statKey = STAT_MAP[cat.name];
+      if (!statKey) continue;
 
-    const players = rows
-      .filter((row) => (row[col("GP")] ?? 0) >= 10)
-      .map((row) => {
-        const f = (n: string) => parseFloat(((row[col(n)] ?? 0) as number).toFixed(1));
-        return {
-          id: row[col("PLAYER_ID")] as number,
-          name: row[col("PLAYER_NAME")] as string,
-          team: row[col("TEAM_ABBREVIATION")] as string,
-          pos: (row[col("PLAYER_POSITION")] as string) ?? "",
-          gp: row[col("GP")] as number,
-          pts: f("PTS"),
-          reb: f("REB"),
-          ast: f("AST"),
-          stl: f("STL"),
-          blk: f("BLK"),
-          tov: f("TOV"),
-          fgm: f("FGM"),
-          fga: f("FGA"),
-          tpm: f("FG3M"),
-          ftm: f("FTM"),
-          fta: f("FTA"),
-        };
-      });
+      for (const leader of cat.leaders ?? []) {
+        const athlete = leader.athlete ?? {};
+        const team    = leader.team    ?? {};
+        const id      = String(athlete.id ?? "");
+        if (!id) continue;
 
+        if (!map.has(id)) {
+          const gpStat = (leader.statistics ?? []).find((s: any) => s.name === "gamesPlayed");
+          const gp = gpStat ? Math.round(Number(gpStat.value) || 0) : 0;
+          map.set(id, {
+            id:   parseInt(id) || 0,
+            name: athlete.displayName ?? athlete.shortName ?? "",
+            team: team.abbreviation ?? "",
+            pos:  athlete.position?.abbreviation ?? "",
+            gp,
+            pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
+            fgm: 0, fga: 0, tpm: 0, ftm: 0, fta: 0,
+          });
+        }
+
+        const entry = map.get(id)!;
+        entry[statKey] = parseFloat((Number(leader.value) || 0).toFixed(1));
+      }
+    }
+
+    const players = Array.from(map.values()).filter(p => p.name);
     return NextResponse.json({ players });
   } catch {
     return NextResponse.json({ players: [] });

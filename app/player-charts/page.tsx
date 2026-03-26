@@ -291,7 +291,7 @@ function StatChart({
         <PctBadge data={data} keys={[dataKey]} />
       </h3>
       <ResponsiveContainer width="100%" height={240}>
-        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10 }}>
+        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10, right: 20 }}>
           <CartesianGrid vertical={false} stroke={C.grid} strokeDasharray="3 3" />
           <XAxis dataKey="label" tick={makeXTick(data)} axisLine={false} tickLine={false} height={data.length > 7 ? 58 : 42} />
           <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={36} domain={domain} />
@@ -345,7 +345,7 @@ function PRAChart({ data }: { data: any[] }) {
         <PctBadge data={data} keys={["pts", "reb", "ast"]} />
       </h3>
       <ResponsiveContainer width="100%" height={240}>
-        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10 }}>
+        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10, right: 20 }}>
           <CartesianGrid vertical={false} stroke={C.grid} strokeDasharray="3 3" />
           <XAxis dataKey="label" tick={makeXTick(data)} axisLine={false} tickLine={false} height={data.length > 7 ? 58 : 42} />
           <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={36} domain={domain} />
@@ -402,7 +402,7 @@ function STLBLKChart({ data }: { data: any[] }) {
         <PctBadge data={data} keys={["stl", "blk"]} />
       </h3>
       <ResponsiveContainer width="100%" height={240}>
-        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10 }}>
+        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10, right: 20 }}>
           <CartesianGrid vertical={false} stroke={C.grid} strokeDasharray="3 3" />
           <XAxis dataKey="label" tick={makeXTick(data)} axisLine={false} tickLine={false} height={data.length > 7 ? 58 : 42} />
           <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={36} domain={domain} />
@@ -470,7 +470,7 @@ function FantasyChart({ data, scoring }: { data: (GameLog & { fp: number })[]; s
         <PctBadge data={data} keys={["fp"]} />
       </h3>
       <ResponsiveContainer width="100%" height={240}>
-        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10 }}>
+        <ComposedChart data={data} barCategoryGap="30%" margin={{ bottom: 10, right: 20 }}>
           <CartesianGrid vertical={false} stroke={C.grid} strokeDasharray="3 3" />
           <XAxis dataKey="label" tick={makeXTick(data)} axisLine={false} tickLine={false} height={data.length > 7 ? 58 : 42} />
           <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={36} domain={domain} />
@@ -542,11 +542,8 @@ export default function PlayerChartsPage() {
     setRealLog(null);
     setUsingReal(false);
 
-    const nbaId = selected.nbaId ?? 0;
     fetch(
-      `/api/nba/gamelog?bdlId=${selected.bdlId}` +
-      `${nbaId ? `&playerId=${nbaId}` : ""}` +
-      `&playerName=${encodeURIComponent(selected.name)}`
+      `/api/nba/gamelog?playerName=${encodeURIComponent(selected.name)}&teamAbbr=${encodeURIComponent(selected.team)}`
     )
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {
@@ -563,12 +560,9 @@ export default function PlayerChartsPage() {
 
     historyFetchedFor.current = selected.name;
     setHistoryLoading(true);
-    const nbaId = selected.nbaId ?? 0;
 
     fetch(
-      `/api/nba/gamelog?bdlId=${selected.bdlId}` +
-      `${nbaId ? `&playerId=${nbaId}` : ""}` +
-      `&playerName=${encodeURIComponent(selected.name)}&multi=true`
+      `/api/nba/gamelog?playerName=${encodeURIComponent(selected.name)}&teamAbbr=${encodeURIComponent(selected.team)}&multi=true`
     )
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {

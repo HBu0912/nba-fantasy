@@ -114,24 +114,16 @@ export default function TradePage() {
   const { scoring, setScoring } = useScoring();
   const [teamA, setTeamA] = useState<Player[]>([]);
   const [teamB, setTeamB] = useState<Player[]>([]);
-  const [nbaIdMap, setNbaIdMap] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    fetch("/api/nba/roster")
-      .then(r => r.json())
-      .then(d => { if (d.nameToId) setNbaIdMap(d.nameToId); })
-      .catch(() => {});
-  }, []);
-
   const addPlayer = async (
     result: SearchResult,
     setTeam: React.Dispatch<React.SetStateAction<Player[]>>
   ) => {
     const name = `${result.first_name} ${result.last_name}`;
+    const teamAbbr = result.team?.abbreviation ?? "";
     const placeholder: Player = {
       id: result.id,
       name,
-      team: result.team?.abbreviation ?? "—",
+      team: teamAbbr || "—",
       pos: result.position ?? "—",
       pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
       fgm: 0, fga: 0, tpm: 0, ftm: 0, fta: 0,
@@ -139,21 +131,17 @@ export default function TradePage() {
     };
     setTeam(prev => [...prev, placeholder]);
 
+    if (!teamAbbr) {
+      setTeam(prev => prev.map(p => p.id === result.id ? { ...p, loading: false } : p));
+      return;
+    }
+
     try {
-      const nbaId = nbaIdMap[name];
       const glRes = await fetch(
-        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
-        `${nbaId ? `&playerId=${nbaId}` : ""}`
+        `/api/nba/gamelog?playerName=${encodeURIComponent(name)}&teamAbbr=${encodeURIComponent(teamAbbr)}`
       );
       const glJson = await glRes.json();
-      const allGames: any[] = glJson.games ?? [];
-
-      const seasonStart = new Date("2025-10-01").getTime();
-      const currentGames = allGames.filter(g => {
-        const d = new Date(g.date ?? "").getTime();
-        return !isNaN(d) && d >= seasonStart;
-      });
-      const games = currentGames.length > 0 ? currentGames : allGames;
+      const games: any[] = glJson.games ?? [];
 
       if (games.length > 0) {
         const avg = (key: string) =>
@@ -164,30 +152,6 @@ export default function TradePage() {
           stl: avg("stl"), blk: avg("blk"), tov: avg("tov"),
           fgm: avg("fgm"), fga: avg("fga"), tpm: avg("tpm"),
           ftm: avg("ftm"), fta: avg("fta"),
-          loading: false,
-        } : p));
-        return;
-      }
-
-      // Fallback: season averages
-      const saRes = await fetch(`/api/nba/season-averages?bdlId=${result.id}`);
-      const saJson = await saRes.json();
-      const avg = saJson.data;
-
-      if (avg && (avg.pts ?? 0) > 0) {
-        setTeam(prev => prev.map(p => p.id === result.id ? {
-          ...p,
-          pts:  parseFloat((avg.pts      ?? 0).toFixed(1)),
-          reb:  parseFloat((avg.reb      ?? 0).toFixed(1)),
-          ast:  parseFloat((avg.ast      ?? 0).toFixed(1)),
-          stl:  parseFloat((avg.stl      ?? 0).toFixed(1)),
-          blk:  parseFloat((avg.blk      ?? 0).toFixed(1)),
-          tov:  parseFloat((avg.turnover ?? 0).toFixed(1)),
-          fgm:  parseFloat((avg.fgm      ?? 0).toFixed(1)),
-          fga:  parseFloat((avg.fga      ?? 0).toFixed(1)),
-          tpm:  parseFloat((avg.fg3m     ?? 0).toFixed(1)),
-          ftm:  parseFloat((avg.ftm      ?? 0).toFixed(1)),
-          fta:  parseFloat((avg.fta      ?? 0).toFixed(1)),
           loading: false,
         } : p));
         return;

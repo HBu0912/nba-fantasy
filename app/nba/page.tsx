@@ -11,7 +11,7 @@ type SearchResult = {
 };
 
 type Player = {
-  id: number; // bdlId
+  id: number;
   name: string;
   team: string;
   pos: string;
@@ -40,17 +40,14 @@ const NBA_TEAM_IDS: Record<string, number> = {
 };
 
 function PlayerCard({
-  player, players, onRemove, single, nbaId,
+  player, players, onRemove, single,
 }: {
   player: Player;
   players: Player[];
   onRemove: () => void;
   single?: boolean;
-  nbaId?: number;
 }) {
-  const [imgError, setImgError] = useState(false);
   const teamId = NBA_TEAM_IDS[player.team];
-  const photoUrl = nbaId ? `https://cdn.nba.com/headshots/nba/latest/1040x760/${nbaId}.png` : null;
 
   const isLeader = (key: string) => {
     if (players.length <= 1) return true;
@@ -67,27 +64,12 @@ function PlayerCard({
         ✕
       </button>
 
-      <div className={`relative bg-gray-800 ${single ? "h-40" : "h-28"}`}>
-        {photoUrl && !imgError ? (
-          <img
-            src={photoUrl}
-            alt={player.name}
-            onError={() => setImgError(true)}
-            className={`absolute bottom-0 left-4 object-contain ${single ? "h-40" : "h-28"}`}
-          />
-        ) : (
-          <div className={`absolute bottom-0 left-4 flex items-end ${single ? "h-40 w-24" : "h-28 w-16"}`}>
-            <svg viewBox="0 0 100 140" className="h-full text-gray-600 fill-current">
-              <circle cx="50" cy="35" r="22" />
-              <ellipse cx="50" cy="110" rx="38" ry="30" />
-            </svg>
-          </div>
-        )}
+      <div className={`relative bg-gray-800 ${single ? "h-28" : "h-20"} flex items-center justify-end pr-3`}>
         {teamId && (
           <img
             src={`https://cdn.nba.com/logos/nba/${teamId}/global/L/logo.svg`}
             alt={player.team}
-            className={`absolute top-2 right-2 object-contain ${single ? "w-12 h-12" : "w-8 h-8"}`}
+            className={`object-contain ${single ? "w-16 h-16" : "w-10 h-10"}`}
           />
         )}
       </div>
@@ -142,16 +124,7 @@ export default function NBAPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [nbaIdMap, setNbaIdMap] = useState<Record<string, number>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Fetch NBA.com ID map once for photo URLs
-  useEffect(() => {
-    fetch("/api/nba/roster")
-      .then(r => r.json())
-      .then(d => { if (d.nameToId) setNbaIdMap(d.nameToId); })
-      .catch(() => {});
-  }, []);
 
   // Debounced search
   useEffect(() => {
@@ -175,10 +148,11 @@ export default function NBAPage() {
   const addPlayer = async (result: SearchResult) => {
     if (players.length >= 4) return;
     const name = `${result.first_name} ${result.last_name}`;
+    const teamAbbr = result.team?.abbreviation ?? "";
     const placeholder: Player = {
       id: result.id,
       name,
-      team: result.team?.abbreviation ?? "—",
+      team: teamAbbr || "—",
       pos: result.position ?? "—",
       pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
       fgm: 0, fga: 0, tpm: 0,
@@ -188,54 +162,26 @@ export default function NBAPage() {
     setSearch("");
     setResults([]);
 
+    if (!teamAbbr) {
+      setPlayers(prev => prev.map(p => p.id === result.id ? { ...p, loading: false } : p));
+      return;
+    }
+
     try {
-      // 1. Gamelog-first: same source that works in Player Charts (pass nbaId for NBA stats fallback)
-      const nbaId = nbaIdMap[name];
       const glRes = await fetch(
-        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
-        `${nbaId ? `&playerId=${nbaId}` : ""}`
+        `/api/nba/gamelog?playerName=${encodeURIComponent(name)}&teamAbbr=${encodeURIComponent(teamAbbr)}`
       );
       const glJson = await glRes.json();
-      const allGames: any[] = glJson.games ?? [];
-
-      // Filter to current season (2025-26, started ~Oct 2025)
-      const seasonStart = new Date("2025-10-01").getTime();
-      const currentGames = allGames.filter(g => {
-        const d = new Date(g.date ?? "").getTime();
-        return !isNaN(d) && d >= seasonStart;
-      });
-      const games = currentGames.length > 0 ? currentGames : allGames;
+      const games: any[] = glJson.games ?? [];
 
       if (games.length > 0) {
-        const avg2 = (key: string) =>
+        const avg = (key: string) =>
           parseFloat((games.reduce((s: number, g: any) => s + (g[key] ?? 0), 0) / games.length).toFixed(1));
         setPlayers(prev => prev.map(p => p.id === result.id ? {
           ...p,
-          pts: avg2("pts"), reb: avg2("reb"), ast: avg2("ast"),
-          stl: avg2("stl"), blk: avg2("blk"), tov: avg2("tov"),
-          fgm: avg2("fgm"), fga: avg2("fga"), tpm: avg2("tpm"),
-          loading: false,
-        } : p));
-        return;
-      }
-
-      // 2. Fallback: season averages API
-      const res = await fetch(`/api/nba/season-averages?bdlId=${result.id}`);
-      const json = await res.json();
-      const avg = json.data;
-
-      if (avg && (avg.pts ?? 0) > 0) {
-        setPlayers(prev => prev.map(p => p.id === result.id ? {
-          ...p,
-          pts:  parseFloat((avg.pts      ?? 0).toFixed(1)),
-          reb:  parseFloat((avg.reb      ?? 0).toFixed(1)),
-          ast:  parseFloat((avg.ast      ?? 0).toFixed(1)),
-          stl:  parseFloat((avg.stl      ?? 0).toFixed(1)),
-          blk:  parseFloat((avg.blk      ?? 0).toFixed(1)),
-          tov:  parseFloat((avg.turnover ?? 0).toFixed(1)),
-          fgm:  parseFloat((avg.fgm      ?? 0).toFixed(1)),
-          fga:  parseFloat((avg.fga      ?? 0).toFixed(1)),
-          tpm:  parseFloat((avg.fg3m     ?? 0).toFixed(1)),
+          pts: avg("pts"), reb: avg("reb"), ast: avg("ast"),
+          stl: avg("stl"), blk: avg("blk"), tov: avg("tov"),
+          fgm: avg("fgm"), fga: avg("fga"), tpm: avg("tpm"),
           loading: false,
         } : p));
         return;
@@ -264,7 +210,6 @@ export default function NBAPage() {
             player={players[0]}
             players={players}
             onRemove={() => removePlayer(players[0].id)}
-            nbaId={nbaIdMap[players[0].name]}
             single
           />
         </div>
@@ -279,7 +224,6 @@ export default function NBAPage() {
             player={p}
             players={players}
             onRemove={() => removePlayer(p.id)}
-            nbaId={nbaIdMap[p.name]}
           />
         ))}
         {players.length === 3 && <AddMoreSlot />}
