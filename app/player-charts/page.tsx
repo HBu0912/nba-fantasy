@@ -542,11 +542,8 @@ export default function PlayerChartsPage() {
     setRealLog(null);
     setUsingReal(false);
 
-    const nbaId = selected.nbaId ?? 0;
     fetch(
-      `/api/nba/gamelog?bdlId=${selected.bdlId}` +
-      `${nbaId ? `&playerId=${nbaId}` : ""}` +
-      `&playerName=${encodeURIComponent(selected.name)}`
+      `/api/nba/gamelog?playerName=${encodeURIComponent(selected.name)}&teamAbbr=${encodeURIComponent(selected.team)}`
     )
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {
@@ -563,12 +560,9 @@ export default function PlayerChartsPage() {
 
     historyFetchedFor.current = selected.name;
     setHistoryLoading(true);
-    const nbaId = selected.nbaId ?? 0;
 
     fetch(
-      `/api/nba/gamelog?bdlId=${selected.bdlId}` +
-      `${nbaId ? `&playerId=${nbaId}` : ""}` +
-      `&playerName=${encodeURIComponent(selected.name)}&multi=true`
+      `/api/nba/gamelog?playerName=${encodeURIComponent(selected.name)}&teamAbbr=${encodeURIComponent(selected.team)}&multi=true`
     )
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {
