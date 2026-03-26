@@ -189,10 +189,11 @@ export default function NBAPage() {
     setResults([]);
 
     try {
-      // 1. Gamelog via ESPN team schedule + box scores
-      const teamAbbr = result.team?.abbreviation ?? "";
+      // 1. Gamelog-first: same source that works in Player Charts (pass nbaId for NBA stats fallback)
+      const nbaId = nbaIdMap[name];
       const glRes = await fetch(
-        `/api/nba/gamelog?playerName=${encodeURIComponent(name)}&teamAbbr=${encodeURIComponent(teamAbbr)}`
+        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
+        `${nbaId ? `&playerId=${nbaId}` : ""}`
       );
       const glJson = await glRes.json();
       const allGames: any[] = glJson.games ?? [];

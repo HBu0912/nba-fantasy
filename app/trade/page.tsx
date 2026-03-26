@@ -114,6 +114,15 @@ export default function TradePage() {
   const { scoring, setScoring } = useScoring();
   const [teamA, setTeamA] = useState<Player[]>([]);
   const [teamB, setTeamB] = useState<Player[]>([]);
+  const [nbaIdMap, setNbaIdMap] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/nba/roster")
+      .then(r => r.json())
+      .then(d => { if (d.nameToId) setNbaIdMap(d.nameToId); })
+      .catch(() => {});
+  }, []);
+
   const addPlayer = async (
     result: SearchResult,
     setTeam: React.Dispatch<React.SetStateAction<Player[]>>
@@ -131,9 +140,10 @@ export default function TradePage() {
     setTeam(prev => [...prev, placeholder]);
 
     try {
-      const teamAbbr = result.team?.abbreviation ?? "";
+      const nbaId = nbaIdMap[name];
       const glRes = await fetch(
-        `/api/nba/gamelog?playerName=${encodeURIComponent(name)}&teamAbbr=${encodeURIComponent(teamAbbr)}`
+        `/api/nba/gamelog?bdlId=${result.id}&playerName=${encodeURIComponent(name)}` +
+        `${nbaId ? `&playerId=${nbaId}` : ""}`
       );
       const glJson = await glRes.json();
       const allGames: any[] = glJson.games ?? [];
